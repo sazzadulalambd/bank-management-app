@@ -1,0 +1,11 @@
+App Location
+docker exec -it bank-management-app-web-1 /bin/bash
+
+log file
+docker exec -it bank-management-app-web-1 sh -c "cat /usr/src/app/logs/app.log"
+
+App terminal
+sudo docker logs bank-management-app-web-1
+
+App build
+docker compose up --build -d
