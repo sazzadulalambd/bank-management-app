@@ -1,5 +1,5 @@
 // controllers/transactionController.js
-
+const { Op } = require('sequelize');
 const Transaction = require('../models/Transaction');
 const Account = require('../models/Account');
 const TransferRequest = require('../models/TransferRequest'); 
@@ -83,6 +83,7 @@ exports.deposit = async (req, res) => {
 };
 
 // Withdraw money from an account
+// Withdraw money from an account
 exports.withdrawal = async (req, res) => {
     const { accountId, amount } = req.body;
 
@@ -96,39 +97,75 @@ exports.withdrawal = async (req, res) => {
             return res.status(404).json({ message: 'Account not found.' });
         }
 
-        if (account.balance < amount) {
-            return res.status(400).json({ message: 'Insufficient funds.' });
-        }
-
-
         const accessToken = req.header('Authorization').replace('Bearer ', '').trim();
         const tokenData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 
-        // Check daily limit
-        const limitCheck = await checkDailyLimit(tokenData.id, amount);
-        if (!limitCheck.allowed) {
-            return res.status(400).json({ message: limitCheck.message });
+        // Fetch user details and transaction limit
+        const user = await User.findByPk(tokenData.id);
+        const limitSetting = await TransactionLimit.findOne({ where: { userType: user.role } });
+
+        if (!limitSetting) {
+            return res.status(500).json({ message: 'Transaction limit settings not found for user type.' });
         }
 
-        // Update balance and create transaction record
-        account.balance -= amount;
-
-        await Transaction.create({
-            accountId,
-            amount,
-            transactionType: 'withdrawal',
-            fee: 0.00 // Assuming no fee for withdrawals
+        // Calculate total transactions for the day
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of day
+        const totalDailyTransactions = await Transaction.sum('amount', {
+            where: {
+                accountId,
+                transactionType: 'withdrawal',
+                createdAt: { [Op.gte]: today },
+            },
         });
 
-        await account.save(); // Save updated balance 
+        const totalWithdrawal = (totalDailyTransactions || 0) + amount;
 
-        logger.info('Withdrawal successful for account ID %s: Amount %d', accountId, amount);
-        return res.status(200).json(account); // Return updated account info
+        // Check daily limit
+        if (totalWithdrawal > limitSetting.dailyLimit) {
+            return res.status(400).json({
+                message: `Withdrawal exceeds daily limit of ${limitSetting.dailyLimit}. You have already withdrawn ${totalDailyTransactions || 0}.`,
+            });
+        }
+
+        // Calculate transaction fee
+        const fee = (amount * limitSetting.feePercentage) / 100;
+        const totalAmount = amount + fee;
+
+        // Ensure sufficient funds (including the fee)
+        if (account.balance < totalAmount) {
+            return res.status(400).json({ message: 'Insufficient funds, including transaction fee.' });
+        }
+
+        // Deduct the amount and fee from the account balance
+        account.balance -= totalAmount;
+
+        // Create transaction record
+        await Transaction.create({
+            accountId,
+            amount: amount, // Record only the withdrawal amount
+            transactionType: 'withdrawal',
+            fee: fee.toFixed(2), // Save the fee
+        });
+
+        await account.save(); // Save updated balance
+
+        logger.info('Withdrawal successful for account ID %s: Amount %d, Fee %d', accountId, amount, fee);
+
+        return res.status(200).json({
+            account: {
+                ...account.toJSON(),
+                balance: account.balance.toFixed(2), // Format balance
+            },
+            message: `Withdrawal successful. Amount: ${amount}, Fee: ${fee.toFixed(2)}.`,
+        });
     } catch (error) {
-        logger.error("Error processing withdrawal for account ID %s: %o", accountId, error);
-        return res.status(500).json({ message: 'Error processing withdrawal' });
+        logger.error('Error processing withdrawal for account ID %s: %o', accountId, error);
+        return res.status(500).json({ message: 'Error processing withdrawal', error: error.message });
     }
 };
+
+
 
 // Transfer money between accounts
 exports.transferFunds = async (req, res) => {
@@ -139,6 +176,7 @@ exports.transferFunds = async (req, res) => {
     }
 
     try {
+        // Retrieve source and destination accounts
         const fromAccount = await Account.findByPk(fromAccountId);
         const toAccount = await Account.findByPk(toAccountId);
 
@@ -146,54 +184,102 @@ exports.transferFunds = async (req, res) => {
             return res.status(404).json({ message: 'One or both accounts not found.' });
         }
 
-        // Ensure balance is treated as a number
+        // Ensure the accounts are not the same
+        if (fromAccountId === toAccountId) {
+            return res.status(400).json({ message: 'Source and destination accounts must be different.' });
+        }
+
+        // Retrieve user and limit settings
+        const accessToken = req.header('Authorization').replace('Bearer ', '').trim();
+        const tokenData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+        const user = await User.findByPk(tokenData.id);
+        const limitSetting = await TransactionLimit.findOne({ where: { userType: user.role } });
+
+        if (!limitSetting) {
+            return res.status(500).json({ message: 'Transaction limit settings not found for user type.' });
+        }
+
+        // Calculate total transfers for the day
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of day
+        const totalDailyTransfers = await Transaction.sum('amount', {
+            where: {
+                accountId: fromAccountId,
+                transactionType: 'transfer',
+                createdAt: { [Op.gte]: today }, // Transactions today
+            },
+        });
+
+        const totalTransfer = (totalDailyTransfers || 0) + amount;
+
+        // Check daily transfer limit
+        if (totalTransfer > limitSetting.dailyLimit) {
+            return res.status(400).json({
+                message: `Transfer exceeds daily limit of ${limitSetting.dailyLimit}. You have already transferred ${totalDailyTransfers || 0} today.`,
+            });
+        }
+
+        // Calculate transaction fee
+        const fee = (amount * limitSetting.feePercentage) / 100;
+        const totalAmount = amount + fee;
+
+        // Convert balances to numbers to ensure arithmetic correctness
         const fromBalance = parseFloat(fromAccount.balance);
         const toBalance = parseFloat(toAccount.balance);
 
-        if (fromBalance < amount) {
-            return res.status(400).json({ message: 'Insufficient funds in the source account.' });
+        // Ensure sufficient funds in source account (including fee)
+        if (fromBalance < totalAmount) {
+            return res.status(400).json({ message: 'Insufficient funds in the source account, including transaction fee.' });
         }
 
         // Update balances
-        fromAccount.balance = fromBalance - amount;
-        toAccount.balance = toBalance + amount;
+        fromAccount.balance = fromBalance - totalAmount; // Deduct amount + fee
+        toAccount.balance = toBalance + amount; // Add only the transfer amount
 
         // Create transaction records
         await Transaction.create({
             accountId: fromAccount.id,
-            amount,
+            amount: amount, // Debit amount
             transactionType: 'transfer',
-            fee: 0.00 // Adjust fee as necessary
+            fee: fee.toFixed(2), // Fee for this transaction
         });
 
         await Transaction.create({
             accountId: toAccount.id,
-            amount,
+            amount: amount, // Credit amount
             transactionType: 'transfer',
-            fee: 0.00 // Adjust fee as necessary
+            fee: 0.00, // No fee for destination account
         });
 
+        // Save updated balances
         await fromAccount.save();
         await toAccount.save();
 
-        logger.info('Transfer successful from account ID %s to ID %s: Amount %d', fromAccountId, toAccountId, amount);
+        logger.info(
+            'Transfer successful from account ID %s to account ID %s: Amount %d, Fee %d',
+            fromAccountId,
+            toAccountId,
+            amount,
+            fee
+        );
 
-        // Format balances before sending response
         return res.status(200).json({
             fromAccount: {
                 ...fromAccount.toJSON(),
-                balance: fromAccount.balance.toFixed(2) // Format balance
+                balance: fromAccount.balance.toFixed(2), // Format balance
             },
             toAccount: {
                 ...toAccount.toJSON(),
-                balance: toAccount.balance.toFixed(2) // Format balance
-            }
+                balance: toAccount.balance.toFixed(2), // Format balance
+            },
+            message: `Transfer successful. Amount: ${amount}, Fee: ${fee.toFixed(2)}.`,
         });
     } catch (error) {
-        logger.error("Error processing transfer from account ID %s to ID %s: %o", fromAccountId, toAccountId, error);
+        logger.error('Error processing transfer from account ID %s to %s: %o', fromAccountId, toAccountId, error);
         return res.status(500).json({ message: 'Error processing transfer', error: error.message });
     }
 };
+
 
 // Get transaction history for an account
 exports.getTransactionHistory = async (req, res) => {
