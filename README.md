@@ -6,36 +6,41 @@ The Bank Management Application simulates core banking functionalities by provid
 
 ## Key Features 
 
+### **Features Overview**
+
 1. **User Authentication and Authorization**
-   - **User Registration**
-   - Allows new users to create an account by providing a username, password, email, and role.
-   - Validates input fields and checks for existing usernames.
-   - Sends a welcome email upon successful registration.
-   - **User Login**
-   - Authenticates users using their credentials (username and password).
-   - Generates JWT access and refresh tokens for session management.
-   - Logs invalid login attempts for security monitoring.
-   - **Token Verification**
-   - Validates JWT access tokens to ensure they are still valid.
-   - Confirms the existence of refresh tokens in the database.
-   - **Password Reset**
-   - Implements a forgot password feature that generates a one-time password (OTP) sent to the user's email.
-   - Allows users to verify the OTP and reset their passwords securely.
-   - **Logout**
-   - Removes the user's refresh token from the database to invalidate their session.
-
+   - **User Registration**:  
+   - New users can register with a username, password, email, and role.  
+   - Validates inputs and prevents duplicate usernames.  
+   - Sends a welcome email after successful registration.
+   - **User Login**:  
+   - Authenticates users using username and password.  
+   - Issues JWT access and refresh tokens for session management.  
+   - Logs invalid login attempts for security.
+   - **Token Verification**:  
+   - Verifies JWT access tokens for validity.  
+   - Ensures refresh tokens exist in the database.
+   - **Password Reset**:  
+   - Forgot password feature generates OTP sent via email.  
+   - Users can verify OTP to securely reset their password.
+   - **Logout**:  
+   - Deletes refresh tokens from the database to end the user session.
 2. **Account Management**
-   - Account Types: Support for checking, savings, and loan accounts.
-   - CRUD Operations: Allow creation, viewing, updating, and deletion of accounts.
-   - Account Details: Display balance, account history, and customer details.
-   - Multi-Currency Support: Optionally add support for different currencies if needed.
-
+   - **Account Types**: Supports checking, savings, and loan accounts.  
+   - **CRUD Operations**: Enables account creation, viewing, updating, and deletion.  
+   - **Account Details**: Displays balances, transaction history, and user details.  
+   - **Multi-Currency Support**: Optionally supports different currencies for balances.
 3. **Transactions and Fund Transfers**
-   - Deposit and Withdrawals: Enable deposits, withdrawals, and transfers between accounts.
-   - Fund Transfers: Allow internal and external fund transfers (between different banks).
-   - Transaction Limits and Fees: Set daily transaction limits and apply fees for certain types of accounts.
-   - Transaction History: Store and retrieve transaction history for each account.
-
+   - **Deposits and Withdrawals**:
+   - Deposit money into their accounts.
+   - Withdraw money from their accounts.  
+   - **Fund Transfers**:  
+   - Internal transfers between accounts.  
+   - External transfers (requires approval for interbank transactions).  
+   - **Transaction Limits and Fees**:  
+   - Allows admins to set daily transaction limits and fees for different roles.  
+   - **Transaction History**:  
+   - Stores and retrieves transaction records with details like amount, type, and fees.
 4. **Loan Management**
    - Loan Application: Enable customers to apply for loans (with fields for loan type, amount etc.).
    - Loan Approval Workflow: Admins or managers review and approve/reject loan applications.
