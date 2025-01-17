@@ -113,7 +113,11 @@ You can view the ERD diagram at the following link:
 
 ## Testing
 
-Run tests using Jest or Mocha.
+- **Import the JSON into Postman**
+  - Open Postman.
+  - Click on the "Import" button in the top left.
+  - Choose the "File" tab, and select `Bank Management Application.postman_collection.json` from your local directory.
+  - Once imported, you can view and interact with the collection in Postman.
 
 ## License
 
