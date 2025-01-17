@@ -56,9 +56,6 @@ The Bank Management Application simulates core banking functionalities by provid
    - Monthly Statements: Generate monthly account statements with all transactions.
    - Detailed Reports: Include reports on account summaries, loan balances, and transaction history.
 
-7. **Security and Compliance**
-   - Encryption: Encrypt sensitive data, like account numbers and passwords.
-
 ## Feature Table
 
 | **Feature**                          | **Customer**                    | **Bank Staff**                         | **Admin**                              |
