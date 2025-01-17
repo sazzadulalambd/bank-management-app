@@ -9,7 +9,8 @@ const TransferRequest = sequelize.define('TransferRequest', {
     status: { type: DataTypes.ENUM('pending', 'approved', 'rejected'), defaultValue: 'pending' },
 }, {
     timestamps: true,
-    createdAt: 'requestedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 });
 
 module.exports = TransferRequest;

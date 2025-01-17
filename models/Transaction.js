@@ -9,8 +9,9 @@ const Transaction = sequelize.define('Transaction', {
     fee: { type: DataTypes.DECIMAL(15, 2), defaultValue: 0.00 },
     relatedAccountNumber: { type: DataTypes.STRING(255), allowNull: true },
 }, {
-    timestamps: true,
+    timestamps: true, // Enable automatic timestamps
     createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     hooks: {
         beforeCreate: async (transaction) => {
             if (transaction.amount <= 0) {

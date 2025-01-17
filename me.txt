@@ -9,6 +9,7 @@ sudo docker logs bank-management-app-web-1
 
 Database
 docker exec -it bank-management-app-db-1 mysql -u root -p
+DESCRIBE table;
 
 App build
 docker compose up --build -d
