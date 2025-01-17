@@ -33,7 +33,6 @@ async function authorizePostRequests(req, res, next) {
     if (req.body.user && tokenData.id !== req.body.user) {
         return res.status(401).json({ message: "User conflict! The user making the request doesn't match the user in the request." });
     }
-    req.user = tokenData;
     return next();
 }
 

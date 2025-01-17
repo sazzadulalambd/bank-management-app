@@ -24,10 +24,14 @@ app.use(errorHandler);
 // Import routes 
 const authRoutes= require('./routes/authRoutes'); 
 const accountRoutes= require('./routes/accountRoutes');
+const transactionRoutes= require('./routes/transactionRoutes');
+const adminRoutes = require('./routes/adminRoutes'); 
 
 // Use routes 
 app.use(`${API}/`, authRoutes); 
 app.use(`${API}/accounts`,accountRoutes)
+app.use(`${API}/transactions`,transactionRoutes)
+app.use(`${API}/admins`,adminRoutes)
 
 
 const port = env.PORT || 9900;
