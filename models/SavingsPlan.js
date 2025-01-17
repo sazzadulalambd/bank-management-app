@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
-const Token = sequelize.define('Token', {
+const SavingsPlan = sequelize.define('SavingsPlan', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -15,18 +15,25 @@ const Token = sequelize.define('Token', {
             key: 'id',
         },
     },
-    refreshToken: {
-        type: DataTypes.STRING(255),
+    planType: {
+        type: DataTypes.ENUM('fixed', 'recurring'),
         allowNull: false,
     },
-    accessToken: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
+    amount: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+    },
+    interestRate: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: false,
+    },
+    durationInMonths: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     },
 }, {
     timestamps: true,
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
 });
 
-module.exports = Token;
+module.exports = SavingsPlan;

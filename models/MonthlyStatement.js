@@ -1,32 +1,30 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
-const Token = sequelize.define('Token', {
+const MonthlyStatement = sequelize.define('MonthlyStatement', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    userId: {
+    accountId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Users',
+            model: 'Accounts',
             key: 'id',
         },
     },
-    refreshToken: {
-        type: DataTypes.STRING(255),
+    statementDate: {
+        type: DataTypes.DATEONLY,
         allowNull: false,
     },
-    accessToken: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
+    statementContent: {
+        type: DataTypes.TEXT,
+        allowNull: false,
     },
 }, {
-    timestamps: true,
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
+    timestamps: false,
 });
 
-module.exports = Token;
+module.exports = MonthlyStatement;

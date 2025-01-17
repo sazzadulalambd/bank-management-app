@@ -20,12 +20,12 @@ exports.createAccount = async (req, res) => {
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        // Generate a random account number for demonstration purposes (in production, use a proper method)
-        const accountNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString(); // Example 10-digit number
+        // Generate a random account number for demonstration purposes
+        const accountNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
 
         const account = await Account.create({
             userId,
-            accountNumber, // Pass the generated account number here; it will be encrypted in the model hook.
+            accountNumber,
             accountType,
             currency,
         });
@@ -34,24 +34,28 @@ exports.createAccount = async (req, res) => {
         return res.status(201).json(account);
     } catch (error) {
         logger.error("Error creating account for user ID %s: %o", userId, error);
+        
+        // Return a more informative error message
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(409).json({ message: 'Account number must be unique.' });
+        }
+        
         return res.status(500).json({ message: 'Error creating account' });
     }
 };
 
 exports.getAllAccounts = async (req, res) => {
-    
-
     try {
         // Extract and verify the access token
         const accessToken = req.header('Authorization').replace('Bearer ', '').trim();
         const tokenData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        const userId = tokenData.id;
-
-        const accounts = await Account.findAll({ where: { userId } });
-        logger.info('Retrieved accounts for user ID %s', userId);
+        
+        const accounts = await Account.findAll({ where: { userId: tokenData.id } });
+        
+        logger.info('Retrieved accounts for user ID %s', tokenData.id);
         return res.json(accounts);
     } catch (error) {
-        logger.error("Error retrieving accounts for user ID %s: %o", userId, error);
+        logger.error("Error retrieving accounts for user ID %s: %o", tokenData.id, error);
         return res.status(500).json({ message: 'Error retrieving accounts' });
     }
 };
@@ -61,17 +65,18 @@ exports.getAccountDetails = async (req, res) => {
 
     try {
         const account = await Account.findByPk(id);
-        if (!account) {
+        
+         if (!account) {
             logger.warn('Account not found for ID %s', id);
             return res.status(404).json({ message: 'Account not found.' });
-        }
+         }
 
-        logger.info('Retrieved details for account ID %s', id);
-        return res.json(account);
-    } catch (error) {
-        logger.error("Error retrieving details for account ID %s: %o", id, error);
-        return res.status(500).json({ message: 'Error retrieving account details' });
-    }
+         logger.info('Retrieved details for account ID %s', id);
+         return res.json(account);
+     } catch (error) {
+         logger.error("Error retrieving details for account ID %s: %o", id, error);
+         return res.status(500).json({ message:'Error retrieving account details' });
+     }
 };
 
 exports.updateAccount = async (req, res) => {
@@ -79,11 +84,11 @@ exports.updateAccount = async (req, res) => {
     const { accountType, balance, currency } = req.body;
 
     try {
-        const account = await Account.findByPk(id);
-        
+         const account = await Account.findByPk(id);
+
          if (!account) {
-            logger.warn('Account not found for update with ID %s', id);
-            return res.status(404).json({ message: 'Account not found.' });
+             logger.warn('Account not found for update with ID %s', id);
+             return res.status(404).json({ message:'Account not found.' });
          }
 
          if (accountType) account.accountType = accountType;
@@ -95,26 +100,26 @@ exports.updateAccount = async (req, res) => {
          logger.info('Updated account successfully for ID %s', id);
          return res.json(account);
      } catch (error) {
-         logger.error("Error updating account ID %s: %o", id, error);
-         return res.status(500).json({ message: 'Error updating account' });
+         logger.error("Error updating account ID %s : %o", id , error );
+         return res.status(500).json({ message:'Error updating account' });
      }
 };
 
 exports.deleteAccount = async (req, res) => {
      const { id } = req.params;
 
-     try {
-         const result = await Account.destroy({ where: { id } });
-         
-         if (!result) {
-             logger.warn('Account not found for deletion with ID %s', id);
-             return res.status(404).json({ message: 'Account not found.' });
-         }
+     try{
+          const result= await Account.destroy({ where:{ id } });
 
-         logger.info('Deleted account successfully with ID %s', id);
-         return res.json({ message: 'Account deleted successfully.' });
-     } catch (error) {
-         logger.error("Error deleting account ID %s: %o", id, error);
-         return res.status(500).json({ message: 'Error deleting account' });
+          if (!result){
+               logger.warn('Account not found for deletion with ID %s', id);
+               return res.status(404).json({ message:'Account not found.' });
+          }
+
+          logger.info('Deleted account successfully with ID %s', id);
+          return res.json({ message:'Account deleted successfully.' });
+     } catch(error){
+          logger.error("Error deleting account ID %s : %o", id , error );
+          return res.status(500).json({ message:'Error deleting account' });
      }
 };

@@ -7,10 +7,10 @@ const mailSender = require('../helpers/email_sender');
 const logger = require('../helpers/logger'); // Ensure you have a logger set up
 
 exports.register = async (req, res) => {
-    const { username, password, email, role } = req.body;
+    const { username, password, email, role, phoneNumber } = req.body;
 
     // Validate request body
-    if (!username || !password || !email || !role) {
+    if (!username || !password || !email || !role || !phoneNumber) {
         logger.warn('Registration attempt with missing fields: %o', req.body);
         return res.status(400).json({ message: 'All fields are required.' });
     }
@@ -29,34 +29,54 @@ exports.register = async (req, res) => {
         // Create the new user
         const user = await User.create({ 
             username, 
-            password_hash: hashedPassword, 
+            passwordHash: hashedPassword, // Match the database model field
             email, 
-            role 
+            role,
+            phoneNumber // Match the database model field
         });
 
-        // Send welcome email (optional)
-        await mailSender.sendMail(
-            user.email,
-            'Welcome to Bank Management App',
-            'Thank you for registering!'
-        );
+        try {
+            // Send welcome email (optional)
+            await mailSender.sendMail(
+                user.email,
+                'Welcome to Bank Management App',
+                'Thank you for registering!'
+            );
+        } catch (emailError) {
+            logger.error('Failed to send email: %o', emailError);
+            return res.status(500).json({ message: 'Error sending welcome email.' });
+        }
 
-        logger.info('User registered successfully: %o', user);
+        logger.info('User registered successfully: %o', { id: user.id, username: user.username });
         res.status(201).json({ message: 'User registered successfully', userId: user.id });
     } catch (error) {
-        logger.error("Error registering user: %o", error);
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            logger.warn('Unique constraint violation: %o', error.errors);
+            return res.status(409).json({ message: 'Duplicate entry error. Check username or email.' });
+        }
+
+        logger.error('Error registering user: %o', error);
         res.status(500).json({ message: 'Error registering user' });
     }
 };
+
 
 exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     try {
+        // Check if user exists
         const user = await User.findOne({ where: { username } });
 
-        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-            logger.warn('Invalid login attempt for username: %s', username);
+        if (!user) {
+            logger.warn('Invalid login attempt for username: %s - User not found', username);
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Compare password
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordMatch) {
+            logger.warn('Invalid login attempt for username: %s - Incorrect password', username);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
@@ -73,21 +93,29 @@ exports.login = async (req, res) => {
             { expiresIn: '60d' }
         );
 
-        // Store refresh token in database
-        await Token.upsert({
+        // Check if a token already exists for the user and delete it
+        const existingToken = await Token.findOne({ where: { userId: user.id } });
+        if (existingToken) {
+            await existingToken.destroy(); // Delete existing token
+        }
+
+        // Save new token
+        await Token.create({
             userId: user.id,
             refreshToken,
             accessToken,
         });
 
-        // Exclude sensitive information
-        const { password_hash, ...userWithoutPassword } = user.dataValues;
+        // Exclude sensitive information from response
+        const { passwordHash, ...userWithoutPassword } = user.dataValues;
 
         logger.info('User logged in successfully: %o', userWithoutPassword);
         return res.json({ ...userWithoutPassword, accessToken, refreshToken });
     } catch (error) {
-        logger.error("Error logging in: %o", error);
-        return res.status(500).json({ message: 'Error logging in' });
+        logger.error("Error logging in for username %s: %o", username, error);
+        
+        // Return a generic error message to avoid exposing sensitive information
+        return res.status(500).json({ message: 'Error logging in', error: error.message });
     }
 };
 
@@ -99,9 +127,9 @@ exports.verifyToken = async function (req, res) {
         
         accessToken = accessToken.replace('Bearer ', '').trim();
 
-        // Find token record in the database
-        const tokenRecord = await Token.findOne({ where: { accessToken } });
-        if (!tokenRecord) return res.status(401).json({ message: 'Invalid token' });
+        // Find token record in the database using the correct column name
+        const tokenRecord = await Token.findOne({ where: { accessToken } }); // Use access_token
+        if (!tokenRecord) return res.status(401).json({ message: 'Invalid or revoked token' });
 
         // Verify the refresh token
         const tokenData = jwt.verify(tokenRecord.refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -119,6 +147,8 @@ exports.verifyToken = async function (req, res) {
         return res.status(500).json({ type: error.name, message: error.message });
     }
 };
+
+
 
 // Handle forgot password
 exports.forgotPassword = async function (req, res) {
@@ -213,7 +243,7 @@ exports.resetPassword = async function (req, res) {
          }
 
          // Hash the new password
-         user.password_hash = bcrypt.hashSync(newPassword, 10);
+         user.passwordHash = bcrypt.hashSync(newPassword, 10);
          
          // Clear the OTP fields
          user.resetPasswordOtp = null;
