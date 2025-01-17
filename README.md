@@ -118,5 +118,3 @@ You can view the ERD diagram at the following link:
   - Click on the "Import" button in the top left.
   - Choose the "File" tab, and select [`Bank Management Application.postman_collection.json`](https://github.com/sazzadulalambd/bank-management-app/blob/main/Bank%20Management%20Application.postman_collection.json) from your local directory.
   - Once imported, you can view and interact with the collection in Postman.
-
-
