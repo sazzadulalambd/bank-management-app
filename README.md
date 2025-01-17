@@ -104,7 +104,7 @@ You can view the ERD diagram at the following link:
 
 1. Clone this repository.
 2. Create a `.env` file in the root directory with your database credentials and JWT secret.
-3. Run `docker-compose up --build` to start the application.
+3. Run `docker-compose up --build -d` to start the application.
 
 ## API Endpoints
 
