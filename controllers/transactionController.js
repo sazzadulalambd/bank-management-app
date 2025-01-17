@@ -82,7 +82,7 @@ exports.deposit = async (req, res) => {
     }
 };
 
-// Withdraw money from an account
+
 // Withdraw money from an account
 exports.withdrawal = async (req, res) => {
     const { accountId, amount } = req.body;
@@ -289,7 +289,8 @@ exports.getTransactionHistory = async (req, res) => {
     try {
         // Fetch transactions
         const transactions = await Transaction.findAll({
-            where: { accountId: id }
+            where: { accountId: id },
+            order: [['createdAt', 'DESC']],
         });
 
         // Log the number of transactions retrieved
@@ -356,10 +357,11 @@ exports.requestExternalTransfer = async (req, res) => {
    }
 };
 
+
 // Approve or reject an external fund transfer request
 exports.approveRejectTransferRequest = async (req, res) => {
     const { id } = req.params; // Transfer request ID
-    const { action } = req.body; // Action: approve or reject
+    const { action } = req.body; // Action: 'approve' or 'reject'
 
     // Validate the action
     if (!['approve', 'reject'].includes(action)) {
@@ -373,83 +375,108 @@ exports.approveRejectTransferRequest = async (req, res) => {
             return res.status(404).json({ message: 'Transfer request not found.' });
         }
 
-        // Step 2: Validate the transfer amount
         const transferAmount = parseFloat(transferRequest.amount);
 
-
+        // Validate transfer amount
         if (isNaN(transferAmount) || transferAmount <= 0) {
-            logger.error(
-                `Invalid transfer amount: ${transferRequest.amount} for request ID: ${id}`
-            );
+            logger.error(`Invalid transfer amount: ${transferRequest.amount} for request ID: ${id}`);
             return res.status(400).json({ message: 'Transaction amount must be greater than zero.' });
         }
 
-        // Step 3: Retrieve accounts involved in the transfer
+        // Step 2: Retrieve accounts involved in the transfer
         const fromAccount = await Account.findByPk(transferRequest.fromAccountId);
         const toAccount = await Account.findByPk(transferRequest.toAccountId);
 
-        // Validate accounts
-        if (!fromAccount) {
-            return res.status(404).json({ message: 'Source account not found.' });
-        }
-        if (!toAccount) {
-            return res.status(404).json({ message: 'Destination account not found.' });
-        }
-
+        if (!fromAccount) return res.status(404).json({ message: 'Source account not found.' });
+        if (!toAccount) return res.status(404).json({ message: 'Destination account not found.' });
 
         if (action === 'approve') {
             const fromBalance = parseFloat(fromAccount.balance);
 
-            // Ensure sufficient funds in the source account
+            // Step 3: Ensure sufficient funds in the source account
             if (fromBalance < transferAmount) {
                 logger.error(
                     `Insufficient funds: Source Account ID ${fromAccount.id}, Balance: ${fromBalance}, Transfer Amount: ${transferAmount}`
                 );
-                return res
-                    .status(400)
-                    .json({ message: 'Insufficient funds in the source account.' });
+                return res.status(400).json({ message: 'Insufficient funds in the source account.' });
             }
 
-            
-            const accessToken = req.header('Authorization').replace('Bearer ', '').trim();
-            const tokenData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-    
-            const limitCheck = await checkDailyLimit(tokenData.id, transferAmount);
+        // Retrieve user and limit settings
+        const accessToken = req.header('Authorization').replace('Bearer ', '').trim();
+        const tokenData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+        const user = await User.findByPk(tokenData.id);
+        const limitSetting = await TransactionLimit.findOne({ where: { userType: user.role } });
+
+        if (!limitSetting) {
+            return res.status(500).json({ message: 'Transaction limit settings not found for user type.' });
+        }
+
+            // Calculate total transfers for today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Start of the day
+            const totalDailyTransfers = await Transaction.sum('amount', {
+                where: {
+                    accountId: fromAccount.id,
+                    transactionType: 'transfer',
+                    createdAt: { [Op.gte]: today }, // Transactions today
+                },
+            });
+
+            const totalTransferAmount = (totalDailyTransfers || 0) + transferAmount;
+
+            // Validate daily limit with cumulative transfers
+            const limitCheck = await checkDailyLimit(tokenData.id, totalTransferAmount);
             if (!limitCheck.allowed) {
-                return res.status(400).json({ message: limitCheck.message });
+                return res.status(400).json({
+                    message: `${limitCheck.message}. You have already transferred ${totalDailyTransfers || 0} today.`,
+                });
             }
 
-            // Step 5: Update balances
-            fromAccount.balance = fromBalance - transferAmount;
-            toAccount.balance = parseFloat(toAccount.balance) + transferAmount;
 
-            // Create transaction records for both accounts
+            // Calculate transaction fee
+            const fee = (transferAmount * limitSetting.feePercentage) / 100;
+            const totalAmount = transferAmount + fee;
+
+            // Step 5: Validate sufficient funds for total amount (transfer + fee)
+            if (fromBalance < totalAmount) {
+                return res.status(400).json({
+                    message: `Insufficient funds in the source account. Total required: ${totalAmount.toFixed(
+                        2
+                    )}, Available: ${fromBalance.toFixed(2)}.`,
+                });
+            }
+
+            // Step 6: Update account balances
+            fromAccount.balance = fromBalance - totalAmount; // Deduct amount + fee
+            toAccount.balance = parseFloat(toAccount.balance) + transferAmount; // Add only transfer amount
+
+            // Create transaction records
             await Transaction.create({
                 accountId: fromAccount.id,
-                amount: transferAmount, // Debit
+                amount: transferAmount,
                 transactionType: 'transfer',
-                fee: 0.0,
+                fee: fee.toFixed(2), // Record fee for this transaction
             });
 
             await Transaction.create({
                 accountId: toAccount.id,
-                amount: transferAmount, // Credit
+                amount: transferAmount,
                 transactionType: 'transfer',
-                fee: 0.0,
+                fee: 0.0, // No fee for credit transaction
             });
 
             // Save updated account balances
             await fromAccount.save();
             await toAccount.save();
 
-            // Step 6: Approve the transfer request
+            // Approve the transfer request
             transferRequest.status = 'approved';
         } else if (action === 'reject') {
             // Reject the transfer request
             transferRequest.status = 'rejected';
         }
 
-        // Save transfer request status
+        // Save the transfer request status
         await transferRequest.save();
 
         logger.info(`Transfer request ID ${id} has been ${action}d successfully.`);
@@ -458,14 +485,11 @@ exports.approveRejectTransferRequest = async (req, res) => {
             transferRequest,
         });
     } catch (error) {
-        // Log the error with detailed information
-        logger.error('Error approving/rejecting transfer request ID %s: %o', id, error);
-
+        // Log and handle errors
+        logger.error('Error processing transfer request ID %s: %o', id, error);
         return res.status(500).json({
             message: 'Error processing transfer request',
             error: error.message,
         });
     }
 };
-
-
