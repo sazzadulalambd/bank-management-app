@@ -7,5 +7,8 @@ docker exec -it bank-management-app-web-1 sh -c "cat /usr/src/app/logs/app.log"
 App terminal
 sudo docker logs bank-management-app-web-1
 
+Database
+docker exec -it bank-management-app-db-1 mysql -u root -p
+
 App build
 docker compose up --build -d

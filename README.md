@@ -54,6 +54,34 @@ The Bank Management Application simulates core banking functionalities by provid
 7. **Security and Compliance**
    - Encryption: Encrypt sensitive data, like account numbers and passwords.
 
+## Feature Table
+
+| **Feature**                          | **Customer**                    | **Bank Staff**                         | **Admin**                              |
+|--------------------------------------|----------------------------------|----------------------------------------|----------------------------------------|
+| **User Authentication**              | JWT-based Login                 | JWT-based Login                        | JWT-based Login                        |
+| **Account Management**               |                                  |                                        |                                        |
+| - View Account Details               | ✅                               | ✅                                     | ✅                                     |
+| - Create Accounts                    | ❌                               | ✅                                     | ✅                                     |
+| - Update Accounts                    | ❌                               | ✅                                     | ✅                                     |
+| - Delete Accounts                    | ❌                               | ✅                                     | ✅                                     |
+| - Multi-Currency Support             | ✅ (for balance display)         | ✅                                     | ✅                                     |
+| **Transactions and Fund Transfers**  |                                  |                                        |                                        |
+| - Deposit Money                      | ✅                               | ✅                                     | ✅                                     |
+| - Withdraw Money                     | ✅                               | ✅                                     | ✅                                     |
+| - Transfer Money (Internal)          | ✅                               | ✅                                     | ✅                                     |
+| - Transfer Money (External)          | ✅ (via approval)                | ✅ (approve/reject requests)           | ✅ (approve/reject requests)           |
+| - Transaction History                | ✅                               | ✅                                     | ✅                                     |
+| - Set Transaction Limits and Fees    | ❌                               | ❌                                     | ✅                                     |
+| **Loan Management**                  |                                  |                                        |                                        |
+| - Apply for Loan                     | ✅                               | ❌                                     | ❌                                     |
+| - Approve/Reject Loan Applications   | ❌                               | ✅                                     | ✅                                     |
+| - View Loan Details                  | ✅ (own loans)                   | ✅                                     | ✅                                     |
+| - Penalty Handling                   | ❌                               | ✅                                     | ✅                                     |
+| **Reports and Statements**           |                                  |                                        |                                        |
+| - Monthly Account Statements         | ✅ (own accounts only)           | ✅                                     | ✅                                     |
+| - Generate Detailed Reports          | ❌                               | ✅                                     | ✅                                     |
+
+
 ## Technical Stack
 
 - **Backend**: Node.js with Express.js

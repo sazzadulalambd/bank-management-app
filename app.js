@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const morgan= require ('morgan');
 const cors = require('cors');
 const { testConnection } = require('./config/db');
 require('dotenv').config();
@@ -12,6 +13,7 @@ const env = process.env;
 const API = env.API_URL;
 
 app.use(bodyParser.json());
+app.use(morgan('dev'));
 app.use(cors());
 app.options('*', cors());
 app.use(authJwt());
@@ -19,12 +21,13 @@ app.use(authorizePostRequests);
 app.use(errorHandler);
 
 
+// Import routes 
+const authRoutes= require('./routes/authRoutes'); 
+const accountRoutes= require('./routes/accountRoutes');
 
-const authRoutes = require('./routes/authRoutes');
-
-
-app.use(`${API}/`, authRoutes);
-
+// Use routes 
+app.use(`${API}/`, authRoutes); 
+app.use(`${API}/accounts`,accountRoutes)
 
 
 const port = env.PORT || 9900;

@@ -19,10 +19,18 @@ const Account = sequelize.define('Account', {
         type: DataTypes.ENUM('checking', 'savings', 'loan'),
         allowNull: false,
     },
+    accountNumber: {
+        type: DataTypes.STRING, // Store encrypted account number as a string
+        allowNull: false,
+    },
     balance: {
         type: DataTypes.FLOAT,
         defaultValue: 0.0
     },
+    currency: { 
+        type: DataTypes.STRING, 
+        defaultValue: 'BDT' 
+      },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
     createdAt: 'created_at', // Specify the database column name
