@@ -42,7 +42,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"mdsazzadulalamshawon\",\n  \"password\": \"Sazzad@123\"\n}",
+							"raw": "{\n  \"username\": \"adminsazzadulalamshawon\",\n  \"password\": \"Sazzad@123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -310,13 +310,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/accounts/8",
+							"raw": "{{base_url}}/accounts/22",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"accounts",
-								"8"
+								"22"
 							]
 						}
 					},
@@ -1103,7 +1103,7 @@
 		},
 		{
 			"key": "token",
-			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MTE4NDI4LCJleHAiOjE3MzcyMDQ4Mjh9.cuseVjkqUZg_P90QeNuiQcZqAqOJPDM9Cf1nWElQzaU",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MjAyMTI5LCJleHAiOjE3MzcyODg1Mjl9.BcdX2OAl_O9hPTVK2EQSQwAI_KcRn1_Cn7OSOY2ttH4",
 			"type": "string"
 		}
 	]

@@ -83,7 +83,6 @@ The Bank Management Application simulates core banking functionalities by provid
 | - Monthly Account Statements         | ✅ (own accounts only)           | ✅                                     | ✅                                     |
 | - Generate Detailed Reports          | ❌                               | ✅                                     | ✅                                     |
 
-
 ## Technical Stack
 
 - **Backend**: Node.js with Express.js
@@ -108,9 +107,9 @@ You can view the ERD diagram at the following link:
 4. Access the API at:
    - **Base URL**: [http://localhost:9000/api/v1](http://localhost:9000/api/v1)
 
-## **Bank Management Application - API Documentation**
+## **API Documentation**
 
-The application provides comprehensive API endpoints for authentication, account management, transactions, and admin functionalities. Below is the categorized list of available routes.
+The application provides comprehensive API endpoints for authentication, account management, transactions, Loan Management, Savings Plan, Monthly Statements, Report and admin functionalities. Below is the categorized list of available routes.
 
 ---
 
@@ -200,9 +199,10 @@ The application provides comprehensive API endpoints for authentication, account
 ---
 
 ### **How to Use**
+
 1. **Base URL**:  
-   All endpoints are prefixed with the following base URL: 
-   [http://localhost:9000/api/v1](http://localhost:9000/api/v1) 
+   All endpoints are prefixed with the following base URL:
+   [http://localhost:9000/api/v1](http://localhost:9000/api/v1)
 2. **Environment Variables**:  
    Ensure the `API_URL` is set as `/api/v1` in your environment variables or Postman collection.
 3. **Authentication**:  
@@ -217,10 +217,12 @@ The application provides comprehensive API endpoints for authentication, account
 ## **Testing**
 
 ### **Postman Collection**
+
 The complete API collection for testing is available in the file:  
 [`Bank Management Application.postman_collection.json`](https://github.com/sazzadulalambd/bank-management-app/blob/main/Bank%20Management%20Application.postman_collection.json).  
 
 ### **Steps to Import into Postman**
+
 1. Open Postman.
 2. Click the **Import** button.
 3. Upload the JSON file (`Bank Management Application.postman_collection.json`).
@@ -228,7 +230,9 @@ The complete API collection for testing is available in the file:
 5. Use the collection to test API endpoints.
 
 ### Notes
-- Authentication is required for most endpoints. Include a valid JWT token in the Authorization header (e.g., Bearer <token>).
+
+- Authentication is required for most endpoints. Include a valid JWT token in the Authorization header (e.g., Bearer `<token>` ).
+  
 ---
 
 ### Example Usage
@@ -258,7 +262,59 @@ The complete API collection for testing is available in the file:
 }
 ```
 
+## **Future Implementation Plan**
 
-## **License**
+### **1. Two-Factor Authentication (2FA)**
 
-This project is licensed under the **MIT License**. See the LICENSE file for details.
+- **Purpose**: Strengthen security for login and transactions.  
+- **Current Use**:  
+  - OTP for registration and password reset.  
+- **Planned Enhancements**:  
+  - **Login**: OTP sent via SMS or email after entering valid credentials.  
+  - **Transactions**: Require OTP verification for critical actions like fund transfers or withdrawals etc.  
+
+---
+
+### **2. Use UUID for ID Fields**
+
+- **Purpose**: Enhance database security and prevent enumeration attacks by replacing incremental `id` fields with universally unique identifiers (UUID).
+- **Implementation**:
+  - Replace all `id` fields in the database schema with UUIDs.
+  - Update application logic to generate UUIDs for primary keys.
+  - Libraries like **`uuid`** (for Node.js) will be used to ensure compliance with UUID standards.
+
+---
+
+### **3. SSL/TLS for Secure Communication**
+
+- **Purpose**: Upgrade HTTP connections to HTTPS to ensure data encryption in transit.
+- **Implementation**:
+  - Generate and configure SSL/TLS certificates.
+  - Update the server configuration to use HTTPS instead of HTTP.
+  - Enforce HTTPS by redirecting all HTTP requests to HTTPS endpoints.
+  - Test the configuration using tools like SSL Labs to ensure compliance with industry standards.
+
+---
+
+### **4. Metadata and Header Security**
+
+- **Purpose**: Minimize information exposure in headers to mitigate security risks.
+- **Implementation**:
+  - Hide sensitive metadata such as server information (`X-Powered-By`, `Server`) using middleware (e.g., Helmet for Node.js).
+  - Expose only the necessary headers for communication:
+    - `Content-Type`
+    - `Authorization`
+    - `X-Request-ID` (optional, for tracking)
+  - Implement Content Security Policy (CSP) to prevent cross-site scripting (XSS) attacks.
+  - Enable HTTP Strict Transport Security (HSTS) to enforce HTTPS communication.
+
+---
+
+### **5. Transition to Microservices Architecture**
+
+- **Purpose**: Improve scalability, fault isolation, and maintainability by breaking the monolithic architecture into microservices.
+- **Implementation**:
+  - **Internal Communication**: Use REST APIs for service-to-service communication within the system.
+  - **External Communication**: Use **gRPC** for efficient and secure external communications.
+  - **Service Examples**: Authentication Service, Account Service, Transaction Service, Loan Service, Report Service, Notification Service etc.
+  - Deploy services using Docker containers and orchestrate using Kubernetes (K8s) for scalability.
