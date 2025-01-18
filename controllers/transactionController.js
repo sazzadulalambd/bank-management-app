@@ -6,24 +6,10 @@ const TransferRequest = require('../models/TransferRequest');
 const User = require('../models/User'); // Import User model
 const TransactionLimit = require('../models/TransactionLimit');
 const logger = require('../helpers/logger');
+const checkDailyLimit = require('../helpers/checkDailyLimit');
 const jwt = require('jsonwebtoken');
 
-// Function to check daily transaction limit
-async function checkDailyLimit(userId, amount) {
-    const user = await User.findByPk(userId);
-    const limitSetting = await TransactionLimit.findOne({ where: { userType: user.role } });
 
-    if (!limitSetting) {
-        return { allowed: true }; // No limit set
-    }
-
-    // Check if the amount exceeds the daily limit
-    if (amount > limitSetting.dailyLimit) {
-        return { allowed: false, message: `Transaction exceeds daily limit of ${limitSetting.dailyLimit}` };
-    }
-
-    return { allowed: true };
-}
 
 
 // Deposit money into an account

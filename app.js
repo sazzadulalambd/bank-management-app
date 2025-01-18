@@ -26,12 +26,14 @@ const authRoutes= require('./routes/authRoutes');
 const accountRoutes= require('./routes/accountRoutes');
 const transactionRoutes= require('./routes/transactionRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
+const loanRoutes = require('./routes/loanRoutes');
 
 // Use routes 
 app.use(`${API}/`, authRoutes); 
 app.use(`${API}/accounts`,accountRoutes)
 app.use(`${API}/transactions`,transactionRoutes)
 app.use(`${API}/admins`,adminRoutes)
+app.use(`${API}/loans`,loanRoutes)
 
 
 const port = env.PORT || 9900;
