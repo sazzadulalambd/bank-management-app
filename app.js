@@ -27,6 +27,9 @@ const accountRoutes= require('./routes/accountRoutes');
 const transactionRoutes= require('./routes/transactionRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const loanRoutes = require('./routes/loanRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const statementRoutes = require('./routes/statementRoutes');
+const savingsPlanRoutes = require('./routes/savingsPlanRoutes')
 
 // Use routes 
 app.use(`${API}/`, authRoutes); 
@@ -34,6 +37,13 @@ app.use(`${API}/accounts`,accountRoutes)
 app.use(`${API}/transactions`,transactionRoutes)
 app.use(`${API}/admins`,adminRoutes)
 app.use(`${API}/loans`,loanRoutes)
+app.use(`${API}/reports`,reportRoutes)
+app.use(`${API}/statements`,statementRoutes)
+app.use(`${API}/savings-plans`, savingsPlanRoutes);
+
+
+// Start the scheduler
+require('./scheduler/interestScheduler');
 
 
 const port = env.PORT || 9900;

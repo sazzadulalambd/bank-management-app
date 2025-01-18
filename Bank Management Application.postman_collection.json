@@ -460,7 +460,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"accountId\":7 ,\n    \"amount\": 500.00\n}\n",
+							"raw": "{\n    \"accountId\":7,\n    \"amount\": 500.00\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -534,7 +534,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"fromAccountId\": 6,\n    \"toAccountId\": 7,\n    \"amount\": 50.00\n}\n",
+							"raw": "{\n    \"fromAccountId\": 4,\n    \"toAccountId\": 7,\n    \"amount\": 2\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -657,14 +657,414 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/transactions/history/8",
+							"raw": "{{base_url}}/transactions/history/5",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"transactions",
 								"history",
-								"8"
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Loan",
+			"item": [
+				{
+					"name": "Applying for a Loan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6ImN1c3RvbWVyIiwiaWF0IjoxNzM3MTg1NTgwLCJleHAiOjE3MzcyNzE5ODB9.gozByapCrv6pZZA4K5umL1DTHWlke4M2S_zobHFz6eA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": 8,\n    \"loanType\": \"personal\",\n    \"amount\": 5000,\n    \"interestRate\": 5.5,\n    \"repaymentSchedule\": \"monthly\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/loans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"loans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approving or Rejecting a Loan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"approve\" // reject\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/loans/1/approval",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"loans",
+								"1",
+								"approval"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Calculating Penalties",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"approve\" // reject\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/loans/5/calculate-penalty",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"loans",
+								"5",
+								"calculate-penalty"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Repayment Schedule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"duration\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/loans/5/generate-repayment-schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"loans",
+								"5",
+								"generate-repayment-schedule"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Repayment Schedule",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"approve\" // reject\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/loans/5/repayment-schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"loans",
+								"5",
+								"repayment-schedule"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reporting and Statements",
+			"item": [
+				{
+					"name": "Generate Monthly Statement",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": 4,\n  \"month\": \"2025-01\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/statements/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"statements",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Detailed Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": 6,\n  \"reportType\": \"Transaction History\", // or \"Account Summary\"\n  \"startDate\": \"2025-01-01\",\n  \"endDate\": \"2025-01-31\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Interest Calculation and Savings Plans",
+			"item": [
+				{
+					"name": "Create Savings Plan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 2,\n    \"planType\": \"fixed\",\n    \"amount\": 10000,\n    \"interestRate\": 5.5,\n    \"durationInMonths\": 12\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/savings-plans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"savings-plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Savings Plans",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 8,\n    \"planType\": \"fixed\",\n    \"amount\": 10000,\n    \"interestRate\": 5.5,\n    \"durationInMonths\": 12\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/savings-plans/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"savings-plans",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Calculate Maturity for a Specific Plan",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 8,\n    \"planType\": \"fixed\",\n    \"amount\": 10000,\n    \"interestRate\": 5.5,\n    \"durationInMonths\": 12\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/savings-plans/maturity/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"savings-plans",
+								"maturity",
+								"2"
 							]
 						}
 					},

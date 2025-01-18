@@ -116,15 +116,15 @@ The application provides comprehensive API endpoints for authentication, account
 
 ### **Authentication Endpoints**
 
-| **Method** | **Endpoint**            | **Description**                                    |
-|------------|-------------------------|----------------------------------------------------|
-| `POST`     | `/login`         | Authenticate a user and generate access and refresh tokens. |
-| `POST`     | `/register`      | Register a new user (requires username, email, password, role). |
-| `GET`      | `/verify-token`  | Verify the validity of the provided JWT access token. |
-| `POST`     | `/forgot-password` | Generate an OTP for password reset and send it to the user's email. |
-| `POST`     | `/verify-otp`    | Verify the provided OTP for password reset. |
-| `POST`     | `/reset-password` | Reset the user's password (requires new password and OTP verification). |
-| `POST`     | `/logout`        | Log out the user and invalidate their refresh token. |
+| **Method** | **Endpoint**            | **Access**       | **Description**                                    |
+|------------|-------------------------|------------------|----------------------------------------------------|
+| `POST`     | `/login`         | All Roles       | Authenticate a user and generate access and refresh tokens. |
+| `POST`     | `/register`      | All Roles       | Register a new user (requires username, email, password, role). |
+| `GET`      | `/verify-token`  | All Roles       | Verify the validity of the provided JWT access token. |
+| `POST`     | `/forgot-password` | All Roles       | Generate an OTP for password reset and send it to the user's email. |
+| `POST`     | `/verify-otp`    | All Roles       | Verify the provided OTP for password reset. |
+| `POST`     | `/reset-password` | All Roles       | Reset the user's password (requires new password and OTP verification). |
+| `POST`     | `/logout`        | All Roles       | Log out the user and invalidate their refresh token. |
 
 ---
 
@@ -144,20 +144,58 @@ The application provides comprehensive API endpoints for authentication, account
 
 | **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
 |------------|-------------------------------------------|-----------------------|----------------------------------------------------|
-| `POST`     | `/transactions/deposit`            | All Roles             | Deposit money into an account. |
-| `POST`     | `/transactions/withdraw`           | All Roles             | Withdraw money from an account. |
-| `POST`     | `/transactions/transfer`           | All Roles             | Transfer money between user accounts. |
-| `POST`     | `/transactions/request-external-transfer` | Customer              | Request approval for an external bank transfer. |
+| `POST`     | `/transactions/deposit`                  | Customer, Staff, Admin | Deposit money into an account. |
+| `POST`     | `/transactions/withdraw`                 | Customer, Staff, Admin | Withdraw money from an account. |
+| `POST`     | `/transactions/transfer`                 | Customer, Staff, Admin | Transfer money between user accounts. |
+| `POST`     | `/transactions/request-external-transfer`| Customer              | Request approval for an external bank transfer. |
 | `POST`     | `/transactions/approve-reject-transfer/:id` | Staff, Admin          | Approve or reject a pending external transfer request. |
-| `GET`      | `/transactions/history/:id`        | All Roles             | Retrieve transaction history for a specific account by ID. |
+| `GET`      | `/transactions/history/:id`              | Customer, Staff, Admin | Retrieve transaction history for a specific account by ID. |
+
+---
+
+### **Loan Management Endpoints**
+
+| **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
+|------------|-------------------------------------------|-----------------------|----------------------------------------------------|
+| `POST`     | `/loans`                                  | Customer              | Apply for a loan. |
+| `POST`     | `/loans/:id/approval`                     | Staff, Admin          | Approve or reject a loan application. |
+| `GET`      | `/loans/:id/calculate-penalty`            | Staff, Admin          | Calculate penalties for overdue loans. |
+| `POST`     | `/loans/:id/generate-repayment-schedule`  | Staff, Admin          | Generate a repayment schedule for a loan. |
+| `GET`      | `/loans/:id/repayment-schedule`           | Customer, Staff, Admin | Get repayment schedule for a loan. |
+
+---
+
+### **Savings Plan Endpoints**
+
+| **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
+|------------|-------------------------------------------|-----------------------|----------------------------------------------------|
+| `POST`     | `/savings-plans`                          | All Roles             | Create a new savings plan. |
+| `GET`      | `/savings-plans/:userId`                  | All Roles             | Get all savings plans for a specific user. |
+| `GET`      | `/savings-plans/maturity/:planId`         | All Roles             | Calculate the maturity amount for a savings plan. |
+
+---
+
+### **Monthly Statements**
+
+| **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
+|------------|-------------------------------------------|-----------------------|----------------------------------------------------|
+| `POST`     | `/statements/generate`                      | Customer, Staff, Admin | Generate and fetch detailed reports. |
+
+---
+
+### **Report Endpoints**
+
+| **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
+|------------|-------------------------------------------|-----------------------|----------------------------------------------------|
+| `POST`     | `/reports/generate`                      | Customer, Staff, Admin | Generate and fetch detailed reports. |
 
 ---
 
 ### **Admin Endpoints**
 
-| **Method** | **Endpoint**            | **Access** | **Description**                                    |
-|------------|-------------------------|------------|----------------------------------------------------|
-| `POST`     | `/admins/set-limits` | Admin      | Set daily transaction limits and fees for specific roles. |
+| **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
+|------------|-------------------------------------------|-----------------------|----------------------------------------------------|
+| `POST`     | `/admin/set-limits`                       | Admin                 | Set transaction limits and fees. |
 
 ---
 

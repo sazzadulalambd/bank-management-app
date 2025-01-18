@@ -8,6 +8,7 @@ const TransferRequest = require('./TransferRequest');
 const SavingsPlan = require('./SavingsPlan');
 const InterestLog = require('./InterestLog');
 const MonthlyStatement = require('./MonthlyStatement');
+const Report = require('./Report');
 const Token = require('./Token');
 
 // Define associations
@@ -40,10 +41,13 @@ MonthlyStatement.belongsTo(Account, { foreignKey: 'accountId' });
 User.hasMany(Token, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Token.belongsTo(User, { foreignKey: 'userId' });
 
+Account.hasMany(Report, { foreignKey: 'accountId', onDelete: 'CASCADE' });
+Report.belongsTo(Account, { foreignKey: 'accountId' });
+
 // Sync all models
 (async () => {
     await sequelize.sync({ alter: true });
     console.log('Database synced!');
 })();
 
-module.exports = { User, Account, Transaction, Loan, LoanRepayment, TransferRequest, SavingsPlan, InterestLog, MonthlyStatement, Token };
+module.exports = { User, Account, Transaction, Loan, LoanRepayment, TransferRequest, SavingsPlan, InterestLog, MonthlyStatement, Token,Report };
