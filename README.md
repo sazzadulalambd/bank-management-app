@@ -105,16 +105,122 @@ You can view the ERD diagram at the following link:
 1. Clone this repository.
 2. Create a `.env` file in the root directory with your database credentials and JWT secret.
 3. Run `docker-compose up --build -d` to start the application.
+4. Access the API at:
+   - **Base URL**: [http://localhost:9000/api/v1](http://localhost:9000/api/v1)
 
-## API Endpoints
+## **Bank Management Application - API Documentation**
 
-- **POST /api/auth/register** - Register a new user.
-- **POST /api/auth/login** - Login an existing user.
+The application provides comprehensive API endpoints for authentication, account management, transactions, and admin functionalities. Below is the categorized list of available routes.
 
-## Testing
+---
 
-- **Import the JSON into Postman**
-  - Open Postman.
-  - Click on the "Import" button in the top left.
-  - Choose the "File" tab, and select [`Bank Management Application.postman_collection.json`](https://github.com/sazzadulalambd/bank-management-app/blob/main/Bank%20Management%20Application.postman_collection.json) from your local directory.
-  - Once imported, you can view and interact with the collection in Postman.
+### **Authentication Endpoints**
+
+| **Method** | **Endpoint**            | **Description**                                    |
+|------------|-------------------------|----------------------------------------------------|
+| `POST`     | `/login`         | Authenticate a user and generate access and refresh tokens. |
+| `POST`     | `/register`      | Register a new user (requires username, email, password, role). |
+| `GET`      | `/verify-token`  | Verify the validity of the provided JWT access token. |
+| `POST`     | `/forgot-password` | Generate an OTP for password reset and send it to the user's email. |
+| `POST`     | `/verify-otp`    | Verify the provided OTP for password reset. |
+| `POST`     | `/reset-password` | Reset the user's password (requires new password and OTP verification). |
+| `POST`     | `/logout`        | Log out the user and invalidate their refresh token. |
+
+---
+
+### **Account Management Endpoints**
+
+| **Method** | **Endpoint**            | **Access**       | **Description**                                    |
+|------------|-------------------------|------------------|----------------------------------------------------|
+| `POST`     | `/accounts`      | Staff, Admin     | Create a new account (requires userId and account type). |
+| `GET`      | `/accounts`      | All Roles        | Retrieve all accounts associated with the user. |
+| `GET`      | `/accounts/:id`  | All Roles        | Retrieve specific account details by ID. |
+| `PUT`      | `/accounts/:id`  | Staff, Admin     | Update details of an existing account. |
+| `DELETE`   | `/accounts/:id`  | Staff, Admin     | Delete an account by its ID. |
+
+---
+
+### **Transaction Endpoints**
+
+| **Method** | **Endpoint**                              | **Access**            | **Description**                                    |
+|------------|-------------------------------------------|-----------------------|----------------------------------------------------|
+| `POST`     | `/transactions/deposit`            | All Roles             | Deposit money into an account. |
+| `POST`     | `/transactions/withdraw`           | All Roles             | Withdraw money from an account. |
+| `POST`     | `/transactions/transfer`           | All Roles             | Transfer money between user accounts. |
+| `POST`     | `/transactions/request-external-transfer` | Customer              | Request approval for an external bank transfer. |
+| `POST`     | `/transactions/approve-reject-transfer/:id` | Staff, Admin          | Approve or reject a pending external transfer request. |
+| `GET`      | `/transactions/history/:id`        | All Roles             | Retrieve transaction history for a specific account by ID. |
+
+---
+
+### **Admin Endpoints**
+
+| **Method** | **Endpoint**            | **Access** | **Description**                                    |
+|------------|-------------------------|------------|----------------------------------------------------|
+| `POST`     | `/admins/set-limits` | Admin      | Set daily transaction limits and fees for specific roles. |
+
+---
+
+### **How to Use**
+1. **Base URL**:  
+   All endpoints are prefixed with the following base URL: 
+   [http://localhost:9000/api/v1](http://localhost:9000/api/v1) 
+2. **Environment Variables**:  
+   Ensure the `API_URL` is set as `/api/v1` in your environment variables or Postman collection.
+3. **Authentication**:  
+   - Most endpoints require a valid JWT token.  
+   - Include the token in the `Authorization` header as:  
+     ```
+     Authorization: Bearer <your_jwt_token>
+     ```
+
+---
+
+## **Testing**
+
+### **Postman Collection**
+The complete API collection for testing is available in the file:  
+[`Bank Management Application.postman_collection.json`](https://github.com/sazzadulalambd/bank-management-app/blob/main/Bank%20Management%20Application.postman_collection.json).  
+
+### **Steps to Import into Postman**
+1. Open Postman.
+2. Click the **Import** button.
+3. Upload the JSON file (`Bank Management Application.postman_collection.json`).
+4. Update the `base_url` environment variable to `http://localhost:9000/api/v1`.
+5. Use the collection to test API endpoints.
+
+### Notes
+- Authentication is required for most endpoints. Include a valid JWT token in the Authorization header (e.g., Bearer <token>).
+---
+
+### Example Usage
+
+#### **Register a User**
+
+**Request**:  
+`POST /register`  
+**Payload**:
+
+```json
+{
+  "username": "sazzadulalamshawon",
+  "password": "Sazzad@123",
+  "phoneNumber":"01772994093",
+  "email": "sazzadulalamshawon@gmail.com",
+  "role": "customer"
+}
+```
+
+**Response**:
+
+```json
+{
+  "message": "User registered successfully",
+  "userId": 123
+}
+```
+
+
+## **License**
+
+This project is licensed under the **MIT License**. See the LICENSE file for details.
